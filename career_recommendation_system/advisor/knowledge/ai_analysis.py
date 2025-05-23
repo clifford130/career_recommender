@@ -1,19 +1,21 @@
 # advisor/knowledge/ai_analysis.py
 from transformers import pipeline
+from .frames import career_frames # Added import
 
 # Create a text classification pipeline using a pre-trained model.
 # (This is a simple example; in a real-world scenario, you might train your own model.)
 classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 
-def analyze_career_fit(text, candidate_labels=None):
+def analyze_career_fit(text): # candidate_labels parameter removed
     """
     Analyzes the free-text input (e.g., career goals or experiences) and
     returns scores for a list of candidate career labels.
     """
-    if candidate_labels is None:
-        candidate_labels = ["Software Developer", "Data Scientist", "UX Designer", 
-                            "Cybersecurity Analyst", "Teacher","doctor"]
+    candidate_labels = list(career_frames.keys()) # Dynamically set
 
-    result = classifier(text, candidate_labels)
-    # Return the label with the highest score
-    return result["labels"][0], result["scores"][0]
+    # The classifier by default sorts labels by score in descending order.
+    # multi_label=False is the default, meaning scores are for single best fit.
+    result = classifier(text, candidate_labels) 
+    
+    # Return all labels and their corresponding scores, sorted by score by the pipeline
+    return result["labels"], result["scores"]
